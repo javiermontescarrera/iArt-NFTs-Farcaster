@@ -76,7 +76,7 @@ app.frame('/', (c) => {
       <div
         style={{
           alignItems: 'center',
-          background: 'linear-gradient(to right, #432889, #17101F)',
+          background: 'linear-gradient(to bottom, #432889, #17101F)',
           backgroundSize: '100% 100%',
           display: 'flex',
           flexDirection: 'column',
@@ -136,7 +136,7 @@ app.frame('/step-1', (c) => {
       <div
         style={{
           alignItems: 'center',
-          background: 'linear-gradient(to right, #432889, #17101F)',
+          background: 'linear-gradient(to bottom, #432889, #17101F)',
           backgroundSize: '100% 100%',
           display: 'flex',
           flexDirection: 'column',
@@ -163,7 +163,7 @@ app.frame('/step-1', (c) => {
         >
           <p 
             style={{ 
-              fontSize: 56,
+              fontSize: 70,
               color: 'white',
               fontStyle: 'bold',
               textAlign: 'center',
