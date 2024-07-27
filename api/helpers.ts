@@ -53,15 +53,4 @@ export async function handleUploadToIPFS(image: string) {
   const ipfsData = await ipfsResponse.json();
   console.log(`ipfsData: ${ipfsData}`);
   return ipfsData;
-
-  // const objIPFSUploadBody = {imageContent: image};
-  // fetch(`${process.env.API_URL}/ipfs`, {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(objIPFSUploadBody),
-  // })
-  // .then(res => res.json())
-  // .then(ipfsData => {
-  //   console.log(`IpfsHash: ${ipfsData.result.IpfsHash}`);
-  // }
 }
