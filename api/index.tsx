@@ -1,9 +1,15 @@
-import { Button, Frog, TextInput } from 'frog'
+import { Button, Frog, parseEther, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
 import { serveStatic } from 'frog/serve-static'
 import { colors } from 'frog/ui'
 // import { neynar } from 'frog/hubs'
 import { handle } from 'frog/vercel'
+import { abi } from './assets/contracts/iArtNFT.json'
+import { 
+  handleDescriptionGeneration
+, handleImageGeneration
+, handleUploadToIPFS
+ } from './helpers.ts'
 
 // Uncomment to use Edge Runtime.
 // export const config = {
@@ -129,8 +135,8 @@ app.frame('/', (c) => {
 })
 
 app.frame('/step-1', (c) => {
-  const { buttonValue, inputText, status } = c
-  const userInput = inputText || buttonValue
+  // const { buttonValue, inputText } = c
+  c.env = {paintingTitle: "Prueba", paintingDescription: "Descripcion de la prueba"}
   return c.res({
     image: (
       <div
@@ -155,7 +161,7 @@ app.frame('/step-1', (c) => {
             color: 'yellow',
             fontStyle: 'normal',
             letterSpacing: '-0.025em',
-            lineHeight: 1.4,
+            lineHeight: 1.0,
             marginTop: 30,
             padding: '0 120px',
             whiteSpace: 'pre-wrap',
@@ -172,8 +178,13 @@ app.frame('/step-1', (c) => {
           >
             Paso 1
           </p>
-          <p>
-            Escribe un estilo de arte y una descripcion.
+          <p 
+            style={{
+              justifyContent: 'center',
+              textAlign: 'center',
+            }}
+          >
+            Escribe un estilo de arte
           </p>
           <p 
             style={{
@@ -181,29 +192,62 @@ app.frame('/step-1', (c) => {
               textAlign: 'center',
             }}
           >
-            o
-          </p>
-          <p>
-            Presiona el boton para generar una descripcion.
+            Ejemplo: Impresionismo, Realismo, Popart, o el estilo que se te ocurra.
           </p>
         </div>
       </div>
     ),
     intents: [
-      <TextInput placeholder="Ingresa estilo de arte y descripción..." />,
-      <Button action='/step-2'>Generar descripcion</Button>,
-      <Button action='/step-2'>Cotinuar</Button>,
+      <TextInput placeholder="Ingresa estilo de arte y descripcion..." />,
+      <Button action='/step-2'>Generar imagen</Button>,
       <Button.Reset>Reiniciar</Button.Reset>,
     ],
   })
 })
 
 
+app.frame('/step-2', async (c) => {
+  const { buttonValue, inputText } = c;
+  const userInput = inputText || buttonValue;
+
+  const objGeneratedImageIdea = await handleDescriptionGeneration(userInput || "");
+
+  const imageData = await handleImageGeneration(objGeneratedImageIdea.paintingDescription);
+  
+  return c.res({
+    image: `data:image/jpeg;base64,${imageData}`,
+    intents: [
+      <Button.Transaction target={`/mint/${imageData}`}>Mintear mi NFT</Button.Transaction>,
+      <Button.Reset>Reiniciar</Button.Reset>,
+    ],
+  })
+})
 
 // @ts-ignore
 const isEdgeFunction = typeof EdgeFunction !== 'undefined'
 const isProduction = isEdgeFunction || import.meta.env?.MODE !== 'development'
 devtools(app, isProduction ? { assetsPath: '/.frog' } : { serveStatic })
+
+app.transaction('/mint/:image', (c) => {
+  const { inputText } = c
+  const image = c.req.param('image')
+
+  const ipfsData: any = handleUploadToIPFS(image);
+
+  // Contract transaction response.
+  return c.contract({
+    abi,
+    chainId: 'eip155:10',
+    functionName: 'mintToPayer',
+    args: [
+      'farcaster painting', 
+      `${inputText}`, 
+      ipfsData.result.IpfsHash
+    ],
+    to: `0x${process.env.NFT_CONTRACT_ADDR}`,
+    value: parseEther('0.0000015')
+  })
+})
 
 export const GET = handle(app)
 export const POST = handle(app)
