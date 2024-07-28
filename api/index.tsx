@@ -169,7 +169,6 @@ app.frame('/step-1', (c) => {
   })
 })
 
-
 app.frame('/step-2', async (c) => {
   const { buttonValue, inputText } = c;
   const userInput = inputText || buttonValue;
@@ -183,7 +182,7 @@ app.frame('/step-2', async (c) => {
     return c.res({
       image: `data:image/jpeg;base64,${imageData}`,
       intents: [
-        <Button.Transaction target={`/mint/${objGeneratedImageIdea.paintingTitle}/${ipfsData.result.IpfsHash}`}>Mintear mi NFT</Button.Transaction>,
+        <Button.Transaction target={`/mint/${objGeneratedImageIdea.paintingTitle}/${objGeneratedImageIdea.paintingDescription}/${ipfsData.result.IpfsHash}`}>Mintear mi NFT</Button.Transaction>,
         <Button.Reset>Reiniciar</Button.Reset>,
       ],
     })
@@ -194,9 +193,8 @@ const isEdgeFunction = typeof EdgeFunction !== 'undefined'
 const isProduction = isEdgeFunction || import.meta.env?.MODE !== 'development'
 devtools(app, isProduction ? { assetsPath: '/.frog' } : { serveStatic })
 
-app.transaction('/mint/:paintingTitle/:ipfsHash', (c) => {
-  const { inputText } = c
-  const { paintingTitle, ipfsHash } = c.req.param();
+app.transaction('/mint/:paintingTitle/:paintingDescription/:ipfsHash', (c) => {
+  const { paintingTitle, paintingDescription, ipfsHash } = c.req.param();
   console.log(`params: ${JSON.stringify(c.req.param())}`);
 
   // Contract transaction response.
@@ -206,7 +204,7 @@ app.transaction('/mint/:paintingTitle/:ipfsHash', (c) => {
     functionName: 'mintToPayer',
     args: [
       paintingTitle, 
-      `${inputText}`, 
+      paintingDescription, 
       ipfsHash
     ],
     to: `0x${process.env.NFT_CONTRACT_ADDR}`,
