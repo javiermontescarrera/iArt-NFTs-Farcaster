@@ -24,8 +24,10 @@ export async function handleDescriptionGeneration(userInput: string) {
   return objGeneratedImageIdea;
 };
 
-export async function handleImageGeneration(paintingDescription: any) {
+export async function handleImageGeneration(paintingDescription: string) {
   try {
+    console.log(`Received paintingDescription: ${paintingDescription}`);
+
     const imageResponse = await fetch(`${process.env.API_URL}/images`, {
       method: "POST",
       headers: {
@@ -58,6 +60,6 @@ export async function handleUploadToIPFS(image: string) {
     }),
   });
   const ipfsData = await ipfsResponse.json();
-  console.log(`ipfsData: ${ipfsData}`);
+  console.log(`ipfsData: ${JSON.stringify(ipfsData)}`);
   return ipfsData;
 }

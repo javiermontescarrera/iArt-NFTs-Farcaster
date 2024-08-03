@@ -29,8 +29,7 @@ export const app = new Frog({
 })
 
 app.frame('/', (c) => {
-  const { buttonValue, inputText, status } = c
-  const fruit = inputText || buttonValue
+  
   return c.res({
     image: (
       <div
@@ -82,15 +81,15 @@ app.frame('/', (c) => {
       </div>
     ),
     intents: [
-      // <Button.Link href="https://frutero.club">Frutero</Button.Link>,
       <Button action="/step-1">Empezar!</Button>,
     ],
   })
 })
 
 app.frame('/step-1', (c) => {
-  // const { buttonValue, inputText } = c
-  c.env = {paintingTitle: "Prueba", paintingDescription: "Descripcion de la prueba"}
+  const { frameData } = c;
+  // c.env = {paintingTitle: "Prueba", paintingDescription: "Descripcion de la prueba"}
+  console.log(`frameData: ${JSON.stringify(frameData)}`);
   return c.res({
     image: (
       <div
@@ -170,22 +169,25 @@ app.frame('/step-1', (c) => {
 })
 
 app.frame('/step-2', async (c) => {
-  const { buttonValue, inputText } = c;
+  const { buttonValue, inputText, frameData } = c;
   const userInput = inputText || buttonValue;
 
-    const objGeneratedImageIdea = await handleDescriptionGeneration(userInput || "");
+  console.log(`frameData: ${JSON.stringify(frameData)}`);
+
+  const objGeneratedImageIdea = await handleDescriptionGeneration(userInput || "");
+
+  const imageData = await handleImageGeneration(`Painting style: ${userInput}. Painting description: ${objGeneratedImageIdea.paintingDescription}`);
   
-    const imageData = await handleImageGeneration(objGeneratedImageIdea.paintingDescription);
-    
-    const ipfsData: any = await handleUploadToIPFS(imageData);
-    
-    return c.res({
-      image: `data:image/jpeg;base64,${imageData}`,
-      intents: [
-        <Button.Transaction target={`/mint/${objGeneratedImageIdea.paintingTitle}/${objGeneratedImageIdea.paintingDescription}/${ipfsData.result.IpfsHash}`}>Mintear mi NFT</Button.Transaction>,
-        <Button.Reset>Reiniciar</Button.Reset>,
-      ],
-    })
+  const ipfsData: any = await handleUploadToIPFS(imageData);
+  
+  return c.res({
+    image: `data:image/jpeg;base64,${imageData}`,
+    // image: (<div>Hola</div>),
+    intents: [
+      <Button.Transaction target={`/mint/${objGeneratedImageIdea.paintingTitle}/${objGeneratedImageIdea.paintingDescription}/${ipfsData.result.IpfsHash}`}>Mintear mi NFT</Button.Transaction>,
+      <Button.Reset>Reiniciar</Button.Reset>,
+    ],
+  })
 })
 
 // @ts-ignore
