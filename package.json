@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "frog vercel-build",
-    "dev": "frog dev",
+    "dev": "frog dev --host 0.0.0.0",
     "deploy": "vercel"
   },
   "dependencies": {
